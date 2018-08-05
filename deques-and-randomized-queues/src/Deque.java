@@ -49,6 +49,7 @@ public class Deque<Item> implements Iterable<Item> {
     if (isEmpty()) {
       first = new Node();
       first.item = item;
+      count++;
     } else {
       Node oldFirst = first;
       first = new Node();
@@ -67,6 +68,7 @@ public class Deque<Item> implements Iterable<Item> {
     if (isEmpty()) {
       last = new Node();
       last.item = item;
+      count++;
     } else {
       Node oldLast = last;
       last = new Node();
