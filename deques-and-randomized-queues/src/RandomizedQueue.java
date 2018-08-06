@@ -1,6 +1,5 @@
 import edu.princeton.cs.algs4.StdRandom;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -19,18 +18,22 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
       }
 
       int n = 0;
-      for (int i = 0; i < elements.length; i++) {
-        n = StdRandom.uniform(elements.length + 1);
-        Item temp = elements[i];
-        elements[i] = elements[n];
-        elements[n] = temp;
+      int k = 3;
+      while (k > 0) {
+        for (int i = 0; i < elements.length; i++) {
+          n = StdRandom.uniform(elements.length);
+          Item temp = elements[i];
+          elements[i] = elements[n];
+          elements[n] = temp;
+        }
+        k--;
       }
 
       current = 0;
     }
 
     public boolean hasNext() {
-      return current <= elements.length - 1;
+      return current < elements.length;
     }
 
     public void remove() {
@@ -38,7 +41,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     public Item next() {
-      return elements[current];
+      if (current == elements.length) {
+        throw new NoSuchElementException();
+      }
+
+      return elements[current++];
     }
   }
 
@@ -73,17 +80,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     int n = StdRandom.uniform(pos);
-    Item[] copy = (Item[]) new Object[es.length];
-    for (int i = 0; i < es.length; i++) {
-      if (i < n) {
-        copy[i] = es[i];
-      } else if (i > n) {
-        copy[i - 1] = es[i];
-      }
-    }
-
     Item res = es[n];
-    es = copy;
+    es[n] = es[pos - 1];
+    es[pos - 1] = null;
     pos--;
 
     if (pos > 0 && pos == es.length / 4) {
@@ -98,7 +97,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
       throw new NoSuchElementException();
     }
 
-    return es[StdRandom.uniform(pos + 1)];
+    return es[StdRandom.uniform(pos)];
   }
 
   public Iterator<Item> iterator() {
@@ -107,7 +106,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
   private void resize(int capacity) {
     Item[] copy = (Item[]) new Object[capacity];
-    for (int i = 0; i < es.length; i++) {
+    for (int i = 0; i < pos; i++) {
       copy[i] = es[i];
     }
     es = copy;
