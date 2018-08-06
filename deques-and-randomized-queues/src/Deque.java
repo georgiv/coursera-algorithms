@@ -2,6 +2,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Deque<Item> implements Iterable<Item> {
+  private Node first, last;
+  private int count;
+
   private class Node {
     Item item;
     Node previous;
@@ -29,9 +32,6 @@ public class Deque<Item> implements Iterable<Item> {
       return item;
     }
   }
-
-  private Node first, last;
-  private int count;
 
   public boolean isEmpty() {
     return first == null;
