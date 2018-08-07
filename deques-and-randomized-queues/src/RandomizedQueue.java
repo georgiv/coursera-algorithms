@@ -17,16 +17,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         elements[i] = es[i];
       }
 
-      int n = 0;
-      int k = 3;
-      while (k > 0) {
-        for (int i = 0; i < elements.length; i++) {
-          n = StdRandom.uniform(elements.length);
-          Item temp = elements[i];
-          elements[i] = elements[n];
-          elements[n] = temp;
-        }
-        k--;
+      for (int i = 0; i < elements.length; i++) {
+        int n = StdRandom.uniform(i + 1);
+        Item temp = elements[i];
+        elements[i] = elements[n];
+        elements[n] = temp;
       }
 
       current = 0;
