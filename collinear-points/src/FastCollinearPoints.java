@@ -6,9 +6,17 @@ import java.util.Arrays;
 
 public class FastCollinearPoints {
   private Point[] points;
+  private Point[] lowers;
+  private Point[] uppers;
+  private int counter;
   private LineSegment[] ss;
 
-  public FastCollinearPoints(Point[] points) { this.points = validate(points); }
+  public FastCollinearPoints(Point[] points) {
+    this.points = validate(points);
+    this.lowers = new Point[points.length];
+    this.uppers = new Point[points.length];
+    this.counter = 0;
+  }
 
   public int numberOfSegments() {
     if (ss == null) {
@@ -60,9 +68,6 @@ public class FastCollinearPoints {
       return res;
     }
 
-    Point[] lowers = new Point[0];
-    Point[] uppers = new Point[0];
-
     for (int i = 0; i < points.length; i++) {
       Point[] others = new Point[points.length - 1];
       double[] slopes = new double[points.length - 1];
@@ -90,35 +95,11 @@ public class FastCollinearPoints {
         if (slopes[j] == slopes[currentIni]) {
           currentInt++;
         } else {
+          if (maxInt >= 3) {
+            addSegment(points[i], others, maxIni, maxInt);
+          }
           currentInt = 1;
           currentIni = j;
-          if (maxInt >= 3) {
-            Point lower = points[i].compareTo(others[maxIni]) < 0 ? points[i] : others[maxIni];
-            Point upper = points[i].compareTo(others[maxIni + maxInt - 1]) > 0 ? points[i] : others[maxIni + maxInt - 1];
-
-            boolean existing = false;
-            for (int k = 0; k < lowers.length; k++) {
-              existing = lowers[k].compareTo(lower) == 0 && uppers[k].compareTo(upper) == 0;
-              if (existing) {
-                break;
-              }
-            }
-            if (!existing) {
-              Point[] newLowers = new Point[lowers.length + 1];
-              for (int k = 0; k < lowers.length; k++) {
-                newLowers[k] = lowers[k];
-              }
-              newLowers[newLowers.length - 1] = lower;
-              lowers = newLowers;
-
-              Point[] newUppers = new Point[uppers.length + 1];
-              for (int k = 0; k < uppers.length; k++) {
-                newUppers[k] = uppers[k];
-              }
-              newUppers[newUppers.length - 1] = upper;
-              uppers = newUppers;
-            }
-          }
           maxInt = 1;
           maxIni = j;
         }
@@ -128,42 +109,79 @@ public class FastCollinearPoints {
           maxIni = currentIni;
         }
       }
-
       if (maxInt >= 3) {
-        Point lower = points[i].compareTo(others[maxIni]) < 0 ? points[i] : others[maxIni];
-        Point upper = points[i].compareTo(others[maxIni + maxInt - 1]) > 0 ? points[i] : others[maxIni + maxInt - 1];
-
-        boolean existing = false;
-        for (int j = 0; j < lowers.length; j++) {
-          existing = lowers[j].compareTo(lower) == 0 && uppers[j].compareTo(upper) == 0;
-          if (existing) {
-            break;
-          }
-        }
-        if (!existing) {
-          Point[] newLowers = new Point[lowers.length + 1];
-          for (int j = 0; j < lowers.length; j++) {
-            newLowers[j] = lowers[j];
-          }
-          newLowers[newLowers.length - 1] = lower;
-          lowers = newLowers;
-
-          Point[] newUppers = new Point[uppers.length + 1];
-          for (int j = 0; j < uppers.length; j++) {
-            newUppers[j] = uppers[j];
-          }
-          newUppers[newUppers.length - 1] = upper;
-          uppers = newUppers;
-        }
+        addSegment(points[i], others, maxIni, maxInt);
       }
     }
 
-    LineSegment[] newRes = new LineSegment[lowers.length];
+    LineSegment[] newRes = new LineSegment[counter];
     for (int i = 0; i < newRes.length; i++) {
       newRes[i] = new LineSegment(lowers[i], uppers[i]);
     }
     res = newRes;
 
     return res;
+  }
+
+  private void addSegment(Point origin, Point[] others, int initial, int interval) {
+    Point lower = origin.compareTo(others[initial]) < 0 ? origin : others[initial];
+    Point upper = origin.compareTo(others[initial + interval - 1]) > 0 ? origin : others[initial + interval - 1];
+
+    boolean existing = false;
+    for (int k = 0; k < counter; k++) {
+      existing = lowers[k].compareTo(lower) == 0 && uppers[k].compareTo(upper) == 0;
+      if (existing) {
+        break;
+      }
+    }
+    if (!existing) {
+      if (counter == lowers.length) {
+        Point[] newLowers = new Point[lowers.length * 2];
+        for (int i = 0; i < lowers.length; i++) {
+          newLowers[i] = lowers[i];
+        }
+        lowers = newLowers;
+
+        Point[] newUppers = new Point[uppers.length * 2];
+        for (int i = 0; i < uppers.length; i++) {
+          newUppers[i] = uppers[i];
+        }
+        uppers = newUppers;
+      }
+
+      lowers[counter] = lower;
+      uppers[counter] = upper;
+      counter++;
+    }
+  }
+
+  public static void main(String[] args) {
+    // read the n points from a file
+    In in = new In(args[0]);
+    int n = in.readInt();
+    Point[] points = new Point[n];
+    for (int i = 0; i < n; i++) {
+      int x = in.readInt();
+      int y = in.readInt();
+      points[i] = new Point(x, y);
+    }
+
+    // draw the points
+    StdDraw.enableDoubleBuffering();
+    StdDraw.setXscale(0, 32768);
+    StdDraw.setYscale(0, 32768);
+    for (Point p : points) {
+      p.draw();
+    }
+    StdDraw.show();
+
+    // print and draw the line segments
+    FastCollinearPoints collinear = new FastCollinearPoints(points);
+    for (LineSegment segment : collinear.segments()) {
+      StdOut.println(segment);
+      segment.draw();
+    }
+    StdDraw.show();
+    System.out.println(collinear.numberOfSegments());
   }
 }
