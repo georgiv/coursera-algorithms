@@ -63,7 +63,7 @@ public class BruteCollinearPoints {
         for (int k = j + 1; k < points.length - 1; k++) {
           for (int l = k + 1; l < points.length; l++) {
             Point[] c = new Point[]{ points[i], points[j], points[k], points[l]};
-            if (isCollinear(c)) {
+            if (c[0].slopeTo(c[1]) == c[0].slopeTo(c[2]) && c[0].slopeTo(c[1]) == c[0].slopeTo(c[3])) {
               LineSegment[] newRes = new LineSegment[res.length + 1];
               for (int m = 0; m < res.length; m++) {
                 newRes[m] = res[m];
@@ -76,28 +76,5 @@ public class BruteCollinearPoints {
       }
     }
     return res;
-  }
-
-  private boolean isCollinear(Point[] ps) {
-    for (int i = 0; i < ps.length; i++) {
-      Point[] others = new Point[3];
-      int counter = 0;
-      for (int j = 0; j < ps.length; j++) {
-        if (i == j) {
-          continue;
-        }
-        others[counter] = ps[j];
-        counter++;
-      }
-      double slopeA = ps[i].slopeTo(others[0]);
-      double slopeB = ps[i].slopeTo(others[1]);
-      if (slopeA == slopeB) {
-        double slopeC = ps[i].slopeTo(others[2]);
-        if (slopeA == slopeC) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 }
