@@ -52,16 +52,17 @@ public class FastCollinearPoints {
   }
 
   private LineSegment[] findSegments() {
-    LineSegment[] res = new LineSegment[0];
-
     if (points.length < 4) {
-      return res;
+      return new LineSegment[0];
     }
 
     Point[] cp = new Point[points.length];
     for (int i = 0; i < points.length; i++) {
       cp[i] = points[i];
     }
+
+    LineSegment[] res = new LineSegment[points.length];
+    int resCount = 0;
 
     for (int i = 0; i < points.length; i++) {
       Arrays.sort(cp);
@@ -71,24 +72,40 @@ public class FastCollinearPoints {
       int end = 1;
 
       while (start < cp.length) {
-        while (end < cp.length && points[i].slopeTo(cp[end]) == points[i].slopeTo(cp[start])) end++;
+        while (end < cp.length) {
+          if (points[i].slopeTo(cp[end]) == points[i].slopeTo(cp[start])) {
+            end++;
+          } else {
+            break;
+          }
+        }
 
         if (end - start >= 3) {
           Point startP = cp[start].compareTo(points[i]) < 0 ? cp[start] : points[i];
           Point endP = cp[end - 1].compareTo(points[i]) > 0 ? cp[end - 1] : points[i];
 
           if (points[i] == startP) {
-            LineSegment[] newRes = new LineSegment[res.length + 1];
-            for (int j = 0; j < res.length; j++) {
-              newRes[j] = res[j];
+            if (resCount == res.length) {
+              LineSegment[] newRes = new LineSegment[res.length * 2];
+              for (int j = 0; j < res.length; j++) {
+                newRes[j] = res[j];
+              }
+              res = newRes;
             }
-            newRes[newRes.length - 1] = new LineSegment(startP, endP);
-            res = newRes;
+
+            res[resCount] = new LineSegment(startP, endP);
+            resCount++;
           }
         }
         start = end;
       }
     }
+
+    LineSegment[] newRes = new LineSegment[resCount];
+    for (int i = 0; i < resCount; i++) {
+      newRes[i] = res[i];
+    }
+    res = newRes;
 
     return res;
   }
